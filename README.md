@@ -11,7 +11,9 @@ TEST commit
 Place the following text into this file
 `$HOME/.ssh/config` (create it if needed)
 
+```
 Host rice.stanford.edu
     ControlMaster auto
     ControlPersist yes
     ControlPath ~/.ssh/%l%r@%h:%p
+```
