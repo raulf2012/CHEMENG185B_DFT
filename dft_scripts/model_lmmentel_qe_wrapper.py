@@ -1,4 +1,41 @@
 #!/usr/bin/env python
+#above line selects special python interpreter which knows all the paths
+#
+#SBATCH -p iric,owners
+#################
+#set a job name
+#SBATCH --job-name=recon1
+#################
+#a file for job output, you can check job progress
+#SBATCH --output=myjob.out
+#################
+# a file for errors from the job
+#SBATCH --error=myjob.err
+#################
+#time you think you need; default is one hour
+#in minutes in this case
+#SBATCH --time=00:20:00
+#################
+#quality of service; think of it as job priority
+#SBATCH --qos=normal
+#################
+#number of nodes you are requesting
+#SBATCH --nodes=1
+#################
+#memory per node; default is 4000 MB per CPU
+#SBATCH --mem-per-cpu=4000
+#you could use --mem-per-cpu; they mean what we are calling cores
+#################
+#get emailed about job BEGIN, END, and FAIL
+#SBATCH --mail-type=ALL
+#################
+#who to send email to; please change to your email
+#SBATCH  --mail-user=flores12@stanford.edu
+#################
+#task to run per node; each node has 16 cores
+#SBATCH --ntasks-per-node=16
+#################
+
 
 """Simple DFT optimization example.
 
@@ -10,24 +47,19 @@ from ase import io
 
 from espresso.espresso import Espresso
 from espresso.espresso import SiteConfig
-
-# from ase.optimize import LBFGS
 #__|
 
 
 # Read atoms object
 atoms = io.read("init.traj")
 
-
-
-#| - QE Calculator
 site_config = SiteConfig(
     scheduler=None,
     usehostfile=False,
     scratchenv='SCRATCH',
     )
 
-
+#| - QE Calculator
 calc_new = Espresso(
     atoms=None,
     pw=350.0,
@@ -200,11 +232,10 @@ calc_new = Espresso(
     # site=None,
     site=site_config,
     )
-
-atoms.set_calculator(calc_new)
 # __|
 
+atoms.set_calculator(calc_new)
 
 atoms.get_potential_energy()
 
-atoms.write("final.traj")
+# atoms.write("final.traj")
