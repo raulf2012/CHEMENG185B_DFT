@@ -1,40 +1,33 @@
 #!/usr/bin/env python
-#above line selects special python interpreter which knows all the paths
-#
-#SBATCH -p iric,owners
+#| - SLURM HEADER
 #################
-#set a job name
-#SBATCH --job-name=recon1
+#SBATCH --job-name=test00
 #################
-#a file for job output, you can check job progress
-#SBATCH --output=myjob.out
+#SBATCH --time=15:00
 #################
-# a file for errors from the job
-#SBATCH --error=myjob.err
+#SBATCH --ntasks=1
 #################
-#time you think you need; default is one hour
-#in minutes in this case
-#SBATCH --time=00:20:00
+#SBATCH --cpus-per-task=1
 #################
-#quality of service; think of it as job priority
-#SBATCH --qos=normal
-#################
-#number of nodes you are requesting
 #SBATCH --nodes=1
 #################
-#memory per node; default is 4000 MB per CPU
-#SBATCH --mem-per-cpu=4000
-#you could use --mem-per-cpu; they mean what we are calling cores
+#SBATCH --ntasks-per-node=1
+#################
+#SBATCH --mem-per-cpu=2G
 #################
 #get emailed about job BEGIN, END, and FAIL
-#SBATCH --mail-type=ALL
+#SBATCH --mail-type=END,FAIL
 #################
 #who to send email to; please change to your email
 #SBATCH  --mail-user=flores12@stanford.edu
 #################
-#task to run per node; each node has 16 cores
-#SBATCH --ntasks-per-node=16
+#a file for job output, you can check job progress
+#SBATCH --output=job.out
 #################
+# a file for errors from the job
+#SBATCH --error=job.err
+#################
+#__|
 
 
 """Simple DFT optimization example.
@@ -42,31 +35,69 @@
 Author(s): Raul A. Flores
 """
 
+
 #| - IMPORT MODULES
+import os
+import sys
+
 from ase import io
 
-from espresso.espresso import Espresso
-from espresso.espresso import SiteConfig
+#  from espresso.espresso import Espresso
+#  from espresso.espresso import SiteConfig
+from espresso import Espresso
+from espresso import SiteConfig
+
+# from vossjo_espresso import espresso as Espresso
+
+#  from espresso import Espresso
+#  from espresso import SiteConfig
 #__|
 
 
-# Read atoms object
-atoms = io.read("init.traj")
+
+#| - Read atoms object
+try:
+    atoms = io.read("init.traj")
+except:
+    atoms = io.read("init.cif")
+#__|
+
+#| - Parallization
+#  ni = 1
+#  nk = 6
+#  nt = 2
+#  nd = 16
+
+#  ni = 1
+#  nk = 4
+#  nt = 1
+#  nd = 4
+
+ni = 1
+nk = 1
+nt = 1
+nd = 1
+
+pflags = '-ni ' + str(ni) + ' -nk ' + str(nk) + ' -nt ' + str(nt)+ ' -nd ' + str(nd)
+#__|
+
+#| - QE Calculator
 
 site_config = SiteConfig(
-    scheduler=None,
-    usehostfile=False,
+    # scheduler="SLURM",
+    # usehostfile=False,
     scratchenv='SCRATCH',
     )
 
-#| - QE Calculator
-calc_new = Espresso(
-    atoms=None,
+calc = Espresso(
+    #  atoms=None,
     pw=350.0,
     dw=None,
     fw=None,
     nbands=-10,
-    kpts=(1, 1, 1),
+    # #########################################################################
+    kpts=3 * (1, ),
+
     kptshift=(0, 0, 0),
     fft_grid=None,
     calculation='relax',
@@ -91,7 +122,9 @@ calc_new = Espresso(
     spinpol=False,
     noncollinear=False,
     spinorbit=False,
+    # #########################################################################
     outdir="calcdir",
+
     txt=None,
     calcstress=False,
     smearing='fd',
@@ -144,7 +177,10 @@ calc_new = Espresso(
     startingpot=None,
     startingwfc=None,
     ion_positions=None,
-    parflags=None,
+    # #########################################################################
+    # parflags=None,
+    # parflags=pflags,
+
     alwayscreatenewarrayforforces=True,
     verbose='low',
     # automatically generated list of parameters
@@ -228,14 +264,41 @@ calc_new = Espresso(
     w_2=None,
     wmass=None,
     press_conv_thr=None,
-
     # site=None,
     site=site_config,
     )
+
 # __|
 
-atoms.set_calculator(calc_new)
+
+#  vossjo_espresso_params = dict(
+#      #  mode="bfgs",
+#      mode="relax",
+#      opt_algorithm="bfgs",
+#      )
+#  calc = Espresso(
+#      pw=350.0,
+#      kpts=3 * (1, ),
+#      **vossjo_espresso_params)
+
+atoms.set_calculator(calc)
+
+#  print(40 * "*")
+#  print(atoms.calc.site)
 
 atoms.get_potential_energy()
 
+# Read atoms object from qe log file
+# io.read("calcdir/log")
+
+
+
+# #####################################
 # atoms.write("final.traj")
+
+#  print("SLURM_JOB_ID:", os.environ["SLURM_JOB_ID"])
+#  print("IDJIFJSDF")
+#  print(os.environ)
+# print("SUBMITDIR:", os.environ["SUBMITDIR"])
+#  print("SUBMITDIR:", os.environ["SUBMITDIR"])
+#  SLURM_SUBMIT_DIR
