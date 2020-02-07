@@ -174,8 +174,8 @@ with open("dir_bands/band_disp.pickle", "w") as fle:
     pickle.dump((kpts, x, X, energies), fle)
 
 # COMBAK This broke when file already existed, tried a fix - 180405 - RF
-shutil.move("charge_den.tgz", "dir_bands/charge_den.tgz")
-atoms.write("dir_bands/out_bands.traj")
+# shutil.move("charge_den.tgz", "dir_bands/charge_den.tgz")
+# atoms.write("dir_bands/out_bands.traj")
 
 
 
